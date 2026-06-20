@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSync - Carbon Footprint Tracker & Action Hub</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  
+  <!-- Accessibility Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
+  <div class="app-container">
+    
+    <!-- Application Header -->
+    <header class="header">
+      <a href="#" class="brand" aria-label="EcoSync Home">
+        <span class="brand-logo"><i class="fa-solid fa-leaf"></i></span>
+        <span class="brand-name">EcoSync</span>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button class="nav-tab active" data-target="dashboard" id="tab-dashboard" aria-selected="true" role="tab">
+          <i class="fa-solid fa-chart-pie" aria-hidden="true"></i> Dashboard
+        </button>
+        <button class="nav-tab" data-target="calculator" id="tab-calculator" aria-selected="false" role="tab">
+          <i class="fa-solid fa-calculator" aria-hidden="true"></i> Calculator
+        </button>
+        <button class="nav-tab" data-target="logger" id="tab-logger" aria-selected="false" role="tab">
+          <i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Daily Log
+        </button>
+        <button class="nav-tab" data-target="challenges" id="tab-challenges" aria-selected="false" role="tab">
+          <i class="fa-solid fa-trophy" aria-hidden="true"></i> Challenges
+        </button>
+        <button class="nav-tab" data-target="library" id="tab-library" aria-selected="false" role="tab">
+          <i class="fa-solid fa-book-open" aria-hidden="true"></i> Eco-Library
+        </button>
+      </nav>
+
+      <!-- User Stats and Theme Toggle -->
+      <div class="header-controls">
+        <div class="user-badge" id="header-user-badge" aria-live="polite">
+          <i class="fa-solid fa-medal" aria-hidden="true"></i>
+          <span>Lvl <strong id="user-level-val">1</strong></span>
+          <span class="user-xp-bar-mini" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <span class="user-xp-fill-mini" id="user-xp-fill-mini-val"></span>
+          </span>
+        </div>
+        <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle light and dark theme">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="main-content" id="main-content">
+      
+      <!-- 1. DASHBOARD SECTION -->
+      <section class="tab-section active" id="sec-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+        <div class="dashboard-grid">
+          <!-- Stat 1: Annual Footprint -->
+          <div class="glass-card stat-card">
+            <div class="stat-label">Annual Footprint</div>
+            <div class="stat-value" id="dash-footprint-val">0.0 t</div>
+            <div class="stat-trend" id="dash-footprint-trend">
+              <span>Assess footprint first</span>
+            </div>
+          </div>
+          <!-- Stat 2: Carbon Saved -->
+          <div class="glass-card stat-card">
+            <div class="stat-label">Total CO₂ Saved</div>
+            <div class="stat-value" id="dash-saved-val">0.0 kg</div>
+            <div class="stat-trend positive">
+              <i class="fa-solid fa-circle-down"></i> <span id="dash-saved-pct">Active savings</span>
+            </div>
+          </div>
+          <!-- Stat 3: Reduction Goal Progress -->
+          <div class="glass-card stat-card">
+            <div class="stat-label">Goal Progress</div>
+            <div class="stat-value" id="dash-goal-val">0%</div>
+            <div class="stat-trend" id="dash-goal-trend-lbl">
+              <span>No goal active</span>
+            </div>
+          </div>
+          <!-- Stat 4: Gamification Level / Points -->
+          <div class="glass-card stat-card">
+            <div class="stat-label">Eco-Experience</div>
+            <div class="stat-value" id="dash-xp-val">0 XP</div>
+            <div class="stat-trend positive">
+              <i class="fa-solid fa-angle-up"></i> <span id="dash-xp-to-next">100 to Lvl 2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <!-- Carbon Breakdown Chart -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title"><i class="fa-solid fa-chart-pie"></i> Emission Breakdown</h2>
+            </div>
+            <div class="chart-container" id="breakdown-chart-wrapper">
+              <!-- Inline SVG Donut Chart dynamically rendered via js -->
+              <div class="chart-center-label">
+                <span class="chart-center-val" id="chart-total-value">0.0</span>
+                <span class="chart-center-unit">Tons / Yr</span>
+              </div>
+              <svg viewBox="0 0 100 100" class="chart-svg" id="donut-chart-svg">
+                <circle cx="50" cy="50" r="35" class="chart-ring-bg"></circle>
+                <!-- Segments will be generated by JS -->
+              </svg>
+            </div>
+            <div class="chart-legend" id="donut-chart-legend">
+              <div class="legend-item"><span class="legend-color" style="background:#10b981"></span> Transport: 0%</div>
+              <div class="legend-item"><span class="legend-color" style="background:#06b6d4"></span> Home Energy: 0%</div>
+              <div class="legend-item"><span class="legend-color" style="background:#a855f7"></span> Food/Diet: 0%</div>
+              <div class="legend-item"><span class="legend-color" style="background:#f59e0b"></span> Goods/Waste: 0%</div>
+            </div>
+          </div>
+
+          <!-- Carbon Savings Chart -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title"><i class="fa-solid fa-chart-simple"></i> Weekly Activity Impact</h2>
+            </div>
+            <div class="bar-chart-container" id="weekly-bar-chart">
+              <!-- Dynamically rendered bar tags by js -->
+              <div style="text-align: center; width: 100%; color: var(--text-secondary); font-weight: 500;">
+                No logged activities. Go to the <strong>Daily Log</strong> tab to log actions!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CALCULATOR SECTION -->
+      <section class="tab-section" id="sec-calculator" role="tabpanel" aria-labelledby="tab-calculator">
+        <div class="wizard-container glass-card">
+          <!-- Step Nodes Indicator -->
+          <div class="wizard-progress">
+            <div class="wizard-progress-bar" id="wizard-progress-bar-fill"></div>
+            <button class="wizard-step-node active" data-step="1" aria-label="Step 1: Introduction">1</button>
+            <button class="wizard-step-node" data-step="2" aria-label="Step 2: Transportation">2</button>
+            <button class="wizard-step-node" data-step="3" aria-label="Step 3: Home Energy">3</button>
+            <button class="wizard-step-node" data-step="4" aria-label="Step 4: Diet">4</button>
+            <button class="wizard-step-node" data-step="5" aria-label="Step 5: Goods & Waste">5</button>
+            <button class="wizard-step-node" data-step="6" aria-label="Step 6: Results">6</button>
+          </div>
+
+          <form id="footprint-form" novalidate>
+            <!-- STEP 1: Welcome -->
+            <div class="wizard-step-card active" data-step="1">
+              <h2 class="wizard-title">Assess Your Carbon Footprint</h2>
+              <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                Welcome to the EcoSync Carbon Assessment tool. This scientific calculator evaluates your daily actions and estimates your annual greenhouse gas emissions in carbon dioxide equivalents (CO₂e). 
+              </p>
+              <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                All calculations align with standard IPCC guidelines. The assessment takes about 2 minutes, and your data is stored entirely on your device. Let's make an impact!
+              </p>
+              <div class="form-group">
+                <label class="form-label" for="calc-units">Preferred Unit System</label>
+                <select class="input-control" id="calc-units">
+                  <option value="metric">Metric (kilometers, kWh)</option>
+                  <option value="imperial">Imperial (miles, kWh)</option>
+                </select>
+              </div>
+              <div class="wizard-footer-buttons" style="justify-content: flex-end;">
+                <button type="button" class="btn btn-primary btn-next-step" data-next="2">
+                  Begin Assessment <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2: Transportation -->
+            <div class="wizard-step-card" data-step="2">
+              <h2 class="wizard-title"><i class="fa-solid fa-car"></i> Step 2: Transportation</h2>
+              
+              <!-- Personal Vehicle -->
+              <div class="form-group">
+                <label class="form-label" for="input-car-dist" id="car-dist-label">Weekly Car Travel (km)</label>
+                <input type="number" min="0" class="input-control" id="input-car-dist" placeholder="e.g. 150">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-car-fuel">Vehicle Fuel Type</label>
+                <select class="input-control" id="input-car-fuel">
+                  <option value="gasoline">Gasoline / Petrol</option>
+                  <option value="diesel">Diesel</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="electric">Electric (EV)</option>
+                </select>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 1.5rem 0;">
+
+              <!-- Public Transport -->
+              <div class="form-group">
+                <label class="form-label" for="input-public-dist" id="public-dist-label">Weekly Public Transport Travel (km)</label>
+                <input type="number" min="0" class="input-control" id="input-public-dist" placeholder="e.g. 50">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-public-type">Primary Transport Type</label>
+                <select class="input-control" id="input-public-type">
+                  <option value="bus">Bus</option>
+                  <option value="train">Train / Metro / Subway</option>
+                </select>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 1.5rem 0;">
+
+              <!-- Flights -->
+              <div class="input-grid">
+                <div class="form-group">
+                  <label class="form-label" for="input-flights-short">Short-Haul Flights / Yr (< 1500km)</label>
+                  <input type="number" min="0" class="input-control" id="input-flights-short" placeholder="e.g. 2">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="input-flights-long">Long-Haul Flights / Yr (>= 1500km)</label>
+                  <input type="number" min="0" class="input-control" id="input-flights-long" placeholder="e.g. 1">
+                </div>
+              </div>
+
+              <div class="wizard-footer-buttons">
+                <button type="button" class="btn btn-secondary btn-prev-step" data-prev="1">Back</button>
+                <button type="button" class="btn btn-primary btn-next-step" data-next="3">Next <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 3: Home Energy -->
+            <div class="wizard-step-card" data-step="3">
+              <h2 class="wizard-title"><i class="fa-solid fa-house"></i> Step 3: Home Energy</h2>
+              
+              <div class="form-group">
+                <label class="form-label" for="input-household-size">Household Size (Number of members)</label>
+                <input type="number" min="1" class="input-control" id="input-household-size" value="1">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="input-electricity">Average Monthly Electricity (kWh)</label>
+                <input type="number" min="0" class="input-control" id="input-electricity" placeholder="e.g. 300">
+              </div>
+
+              <div class="input-grid">
+                <div class="form-group">
+                  <label class="form-label" for="input-heating">Monthly Heating Consumption (kWh)</label>
+                  <input type="number" min="0" class="input-control" id="input-heating" placeholder="e.g. 400">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="input-heating-type">Heating Energy Source</label>
+                  <select class="input-control" id="input-heating-type">
+                    <option value="gas">Natural Gas</option>
+                    <option value="oil">Heating Oil</option>
+                    <option value="biomass">Biomass / Wood pellets</option>
+                    <option value="lpg">LPG (Liquefied Petroleum Gas)</option>
+                    <option value="electricity">Electricity</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="wizard-footer-buttons">
+                <button type="button" class="btn btn-secondary btn-prev-step" data-prev="2">Back</button>
+                <button type="button" class="btn btn-primary btn-next-step" data-next="4">Next <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 4: Food & Diet -->
+            <div class="wizard-step-card" data-step="4">
+              <h2 class="wizard-title"><i class="fa-solid fa-utensils"></i> Step 4: Food & Diet</h2>
+              <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                Food production is a massive source of global greenhouse gases. Choose the diet classification that best reflects your eating habits.
+              </p>
+              
+              <div class="form-group">
+                <label class="form-label" for="input-diet">Diet Classification</label>
+                <select class="input-control" id="input-diet">
+                  <option value="heavyMeat">Heavy Meat Eater (Frequent red meat/beef/lamb daily)</option>
+                  <option value="averageMeat">Average Meat Eater (Moderate meat intake, poultry, fish)</option>
+                  <option value="vegetarian">Vegetarian (No meat, does include cheese, eggs, dairy)</option>
+                  <option value="vegan">Vegan (Entirely plant-based, no animal products)</option>
+                </select>
+              </div>
+
+              <div class="wizard-footer-buttons">
+                <button type="button" class="btn btn-secondary btn-prev-step" data-prev="3">Back</button>
+                <button type="button" class="btn btn-primary btn-next-step" data-next="5">Next <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 5: Goods & Waste -->
+            <div class="wizard-step-card" data-step="5">
+              <h2 class="wizard-title"><i class="fa-solid fa-bag-shopping"></i> Step 5: Goods & Waste</h2>
+              
+              <div class="form-group">
+                <label class="form-label" for="input-shopping">Shopping & Consumption Rate</label>
+                <select class="input-control" id="input-shopping">
+                  <option value="high">High (Frequent new purchases: gadgets, clothes, luxury goods)</option>
+                  <option value="average">Average (Moderate shopping: replacement of items when needed)</option>
+                  <option value="low">Minimalist (Rare purchasing, prefers secondhand/reusable items)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-recycling">Household Recycling Rate (%)</label>
+                <input type="range" class="input-control" id="input-recycling" min="0" max="100" value="50" style="padding:0.25rem 0;">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary); margin-top:0.25rem;">
+                  <span>0% (No recycling)</span>
+                  <span id="recycling-pct-label" style="color:var(--accent-primary); font-weight:700;">50%</span>
+                  <span>100% (Full sorting & composting)</span>
+                </div>
+              </div>
+
+              <div class="wizard-footer-buttons">
+                <button type="button" class="btn btn-secondary btn-prev-step" data-prev="4">Back</button>
+                <button type="submit" class="btn btn-primary" id="btn-submit-calculator">
+                  Calculate Footprint <i class="fa-solid fa-square-poll-vertical"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 6: Results -->
+            <div class="wizard-step-card" data-step="6">
+              <div class="results-container">
+                <h2 class="wizard-title"><i class="fa-solid fa-square-check" style="color:var(--accent-primary)"></i> Assessment Complete!</h2>
+                <p style="color: var(--text-secondary);">Your annual carbon footprint is estimated at:</p>
+                <div class="results-score" id="results-co2-val">0.0 Tons CO₂e</div>
+                
+                <div class="results-comparison" id="results-comparison-box">
+                  <!-- Generated comparison details -->
+                </div>
+
+                <div style="margin: 2rem 0; text-align: left;">
+                  <h3 style="font-size: 1.15rem; margin-bottom: 0.75rem; text-align: center;">Set a Carbon Reduction Goal</h3>
+                  <p style="font-size:0.85rem; color: var(--text-secondary); text-align:center; margin-bottom: 1rem;">
+                    Scientific consensus recommends reducing individual footprints to under 2 tons per year. Select a reduction target below to track progress.
+                  </p>
+                  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem;" id="goal-options-group">
+                    <button type="button" class="btn btn-secondary goal-select-btn" data-goal-pct="10">10%</button>
+                    <button type="button" class="btn btn-secondary goal-select-btn" data-goal-pct="20">20%</button>
+                    <button type="button" class="btn btn-secondary goal-select-btn" data-goal-pct="30">30%</button>
+                    <button type="button" class="btn btn-secondary goal-select-btn" data-goal-pct="50">50%</button>
+                  </div>
+                </div>
+
+                <div class="wizard-footer-buttons" style="justify-content: center; gap: 1rem;">
+                  <button type="button" class="btn btn-secondary" id="btn-recalculate">
+                    <i class="fa-solid fa-redo"></i> Recalculate
+                  </button>
+                  <button type="button" class="btn btn-primary" id="btn-go-dashboard">
+                    Go to Dashboard <i class="fa-solid fa-chart-line"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- 3. DAILY LOGGER SECTION -->
+      <section class="tab-section" id="sec-logger" role="tabpanel" aria-labelledby="tab-logger">
+        <div class="logger-layout">
+          <!-- Left side: Log options -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2 class="card-title"><i class="fa-solid fa-circle-plus"></i> Log Eco-Friendly Activities</h2>
+            </div>
+            <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+              Log your sustainable actions throughout the day to earn experience points (XP), rise through levels, and credit offset carbon directly to your dashboard.
+            </p>
+            <div class="quick-activities-grid" id="activities-button-grid">
+              <!-- JavaScript generates activity buttons here -->
+            </div>
+          </div>
+
+          <!-- Right side: History logs list -->
+          <div class="glass-card" style="display:flex; flex-direction:column;">
+            <div class="card-header">
+              <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> History Log</h2>
+              <button class="btn btn-secondary" id="btn-clear-logs" style="padding:0.4rem 0.8rem; font-size:0.75rem;">Clear All</button>
+            </div>
+            <div class="history-list" id="activities-history-container">
+              <!-- JS renders logged activity items here -->
+              <div style="text-align:center; padding: 2rem 0; color: var(--text-muted);">
+                No activities logged today.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ACTION HUB SECTION -->
+      <section class="tab-section" id="sec-challenges" role="tabpanel" aria-labelledby="tab-challenges">
+        <div class="action-grid">
+          <!-- Left Column: Goal tracking and active challenges -->
+          <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <!-- Goal Status -->
+            <div class="glass-card goal-card" id="goal-info-card">
+              <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-bullseye"></i> Reduction Target Status</h2>
+              </div>
+              <div class="progress-circle-container">
+                <svg class="progress-circle-svg" id="circle-progress-svg" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" class="circle-bg"></circle>
+                  <circle cx="50" cy="50" r="40" class="circle-fill" id="circle-progress-fill" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                </svg>
+                <div class="progress-circle-text" id="goal-circle-percent">0%</div>
+              </div>
+              <div id="goal-status-text" style="color:var(--text-secondary); font-size:0.95rem;">
+                No reduction goal has been set. Calculate your footprint to activate goals!
+              </div>
+            </div>
+
+            <!-- Active & Recommended Challenges -->
+            <div class="glass-card">
+              <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-list-check"></i> Eco challenges</h2>
+              </div>
+              <div class="challenges-list" id="challenges-container">
+                <!-- Javascript populates challenges here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Badges -->
+          <div class="glass-card" style="align-self: flex-start;">
+            <div class="card-header">
+              <h2 class="card-title"><i class="fa-solid fa-award"></i> Achievement Badges</h2>
+            </div>
+            <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 0.85rem;">
+              Unlock special badges by achieving carbon calculator milestones, logging daily activities, and completing goals.
+            </p>
+            <div class="badges-container" id="badges-grid-container">
+              <!-- JS generates badges lists -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. ECO-LIBRARY SECTION -->
+      <section class="tab-section" id="sec-library" role="tabpanel" aria-labelledby="tab-library">
+        <div class="library-layout">
+          <!-- Left Column: Articles -->
+          <div class="library-articles">
+            
+            <article class="glass-card article-card" tabindex="0">
+              <div class="article-meta">Topic: Carbon Footprint</div>
+              <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Understanding Carbon Scopes: 1, 2, and 3</h2>
+              <p style="color: var(--text-secondary); font-size:0.9rem;">
+                Greenhouse gas emissions are categorized into three groups or 'scopes' by the Greenhouse Gas Protocol. <strong>Scope 1</strong> represents direct emissions from sources owned or controlled (such as fuel combusted in your car). <strong>Scope 2</strong> represents indirect emissions from purchased electricity, steam, or heating. <strong>Scope 3</strong> represents all other indirect emissions throughout the value chain of goods, food, and flights you buy. Reducing Scope 3 emissions often has the largest impact on a personal footprint.
+              </p>
+            </article>
+
+            <article class="glass-card article-card" tabindex="0">
+              <div class="article-meta">Topic: Scientific Benchmarks</div>
+              <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Why is 2 Tons the Golden Target?</h2>
+              <p style="color: var(--text-secondary); font-size:0.9rem;">
+                Under the Paris Agreement, nations have committed to limiting global warming to well below 2°C (ideally 1.5°C) to avoid severe climate disruption. To achieve this, global greenhouse gas emissions must drop significantly. By 2050, the average personal carbon footprint worldwide must fall to under <strong>2 tons of CO₂e per year</strong>. Currently, the global average stands at 4 tons, with high-income countries averaging upwards of 12-16 tons per person.
+              </p>
+            </article>
+
+            <article class="glass-card article-card" tabindex="0">
+              <div class="article-meta">Topic: Daily Impact</div>
+              <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">The Hidden Carbon in Food Systems</h2>
+              <p style="color: var(--text-secondary); font-size:0.9rem;">
+                Food accounts for nearly 26% of global greenhouse gas emissions. However, not all foods are equal. Producing one kilogram of beef releases approximately 60 kilograms of greenhouse gases, while producing a kilogram of peas releases less than 1 kilogram. Shifting to a vegetarian or vegan diet, or simply incorporating meatless days, is one of the most effective and direct levers individuals have to lower their carbon footprint.
+              </p>
+            </article>
+
+          </div>
+
+          <!-- Right Column: Quiz Module -->
+          <div class="glass-card" style="align-self: flex-start;">
+            <div class="card-header">
+              <h2 class="card-title"><i class="fa-solid fa-brain"></i> Eco-Quiz</h2>
+            </div>
+            
+            <div id="quiz-container-box">
+              <!-- JavaScript quiz rendering happens here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Logging Modal -->
+    <div class="modal" id="activity-log-modal" aria-hidden="true" role="dialog">
+      <div class="glass-card modal-content">
+        <h2 style="margin-bottom:0.5rem;" id="modal-title">Log Activity</h2>
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.5rem;" id="modal-desc">Describe your activity</p>
+        
+        <form id="activity-log-form">
+          <input type="hidden" id="modal-activity-id">
+          <div class="form-group">
+            <label class="form-label" for="modal-input-amount" id="modal-input-label">Quantity</label>
+            <input type="number" min="0.1" step="any" class="input-control" id="modal-input-amount" required>
+          </div>
+          <div class="wizard-footer-buttons" style="margin-top:1.5rem; padding-top:1rem;">
+            <button type="button" class="btn btn-secondary" id="btn-close-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Log Action <i class="fa-solid fa-check"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Level-up Toast Notification -->
+    <div class="level-up-toast" id="level-up-toast-notification" role="alert" aria-live="assertive">
+      <span>🎉</span> LEVEL UP! You reached level <span id="toast-level-val">2</span>!
+    </div>
+
+    <!-- Application Footer -->
+    <footer class="footer">
+      <p>&copy; 2026 EcoSync. Built for sustainability, compliance, and privacy.</p>
+      <div class="footer-links">
+        <a href="#" onclick="alert('This application stores all your data in your browser\'s local storage. No data is sent to external servers.'); return false;">Privacy Notice</a>
+        <a href="#" onclick="alert('This application adheres to WCAG 2.1 AA guidelines. Use tab keys to navigate, enter to press buttons.'); return false;">Accessibility Statement</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- App Logic -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
