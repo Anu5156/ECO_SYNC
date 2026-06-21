@@ -1,6 +1,8 @@
 /**
- * EcoSync Jest Test Suite
- * Tests math calculators, leveling curve progression, and logger states.
+ * @file app.test.js
+ * @description EcoSync Jest Test Suite.
+ * Validates carbon math accuracy, XP/levelling curve progression,
+ * activity logging, challenge lifecycle, quiz scoring, and security guards.
  */
 
 import { CarbonCalculator, EMISSION_FACTORS } from '../js/calculator.js';
@@ -175,11 +177,19 @@ describe('EcoSync Quiz Module', () => {
     localStorage.clear();
   });
 
-  test('generates random subsets of quiz questions', () => {
+  test('generates random subsets of quiz questions with correct structure', () => {
     const quiz = QuizManager.getRandomQuiz(4);
     expect(quiz).toHaveLength(4);
     expect(quiz[0]).toHaveProperty('question');
     expect(quiz[0]).toHaveProperty('options');
+    expect(quiz[0]).toHaveProperty('correctAnswerIndex');
+    expect(quiz[0]).toHaveProperty('explanation');
+  });
+
+  test('caps question count at the size of the question bank', () => {
+    const quiz = QuizManager.getRandomQuiz(9999);
+    // Bank has 8 questions; result must never exceed that
+    expect(quiz.length).toBeLessThanOrEqual(8);
   });
 
   test('records quiz attempts and awards correct points including perfect score bonuses', () => {
@@ -253,4 +263,3 @@ describe('EcoSync Input Validation and Security Protections', () => {
     expect(state.xp).toBe(0);
   });
 });
-

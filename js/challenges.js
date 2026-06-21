@@ -1,18 +1,40 @@
 /**
- * EcoSync Gamified Challenges
- * Contains challenge lists and acceptance/completion state transitions.
+ * @module challenges
+ * @description EcoSync Gamified Challenges.
+ * Defines the challenge catalogue and manages accept / abandon / complete
+ * state transitions, delegating persistence and XP to the Tracker module.
  */
 
 import { Tracker } from './tracker.js';
 
+// ---------------------------------------------------------------------------
+// Challenge catalogue
+// ---------------------------------------------------------------------------
+
+/**
+ * @typedef {Object} Challenge
+ * @property {string} id          - Unique challenge identifier.
+ * @property {string} title       - Short display title.
+ * @property {string} description - Full task description shown to the user.
+ * @property {'easy'|'medium'|'hard'} tier - Difficulty tier.
+ * @property {number} co2Saved    - Estimated kg CO2e saved on completion.
+ * @property {number} xpReward    - XP awarded on completion.
+ * @property {string} duration    - Human-readable expected duration.
+ */
+
+/**
+ * Full set of available eco challenges, ordered by difficulty tier.
+ *
+ * @type {Challenge[]}
+ */
 export const CHALLENGES = [
-  // Easy Challenges
+  // ── Easy ──────────────────────────────────────────────────────────────────
   {
     id: 'unplug_vampires',
     title: 'Vampire Slayer',
     description: 'Unplug all vampire electronics (chargers, appliances, TVs in standby) before sleep for 3 days.',
     tier: 'easy',
-    co2Saved: 5, // kg
+    co2Saved: 5,
     xpReward: 50,
     duration: '3 days'
   },
@@ -35,7 +57,7 @@ export const CHALLENGES = [
     duration: '7 days'
   },
 
-  // Medium Challenges
+  // ── Medium ────────────────────────────────────────────────────────────────
   {
     id: 'active_transit_week',
     title: 'Active Commuter',
@@ -64,7 +86,7 @@ export const CHALLENGES = [
     duration: '3 days'
   },
 
-  // Hard Challenges
+  // ── Hard ──────────────────────────────────────────────────────────────────
   {
     id: 'vegetarian_month',
     title: 'Herbivore Era',
@@ -94,40 +116,61 @@ export const CHALLENGES = [
   }
 ];
 
+// ---------------------------------------------------------------------------
+// ChallengeManager class
+// ---------------------------------------------------------------------------
+
+/**
+ * Provides static methods to query and manage challenge lifecycle transitions:
+ * accept → (abandon | complete).
+ */
 export class ChallengeManager {
   /**
-   * Get all challenges
+   * Return all available challenges.
+   *
+   * @returns {Challenge[]} Full challenge catalogue.
    */
   static getAll() {
     return CHALLENGES;
   }
 
   /**
-   * Get challenge by ID
+   * Find a single challenge by its unique identifier.
+   *
+   * @param {string} id - Challenge identifier to look up.
+   * @returns {Challenge|undefined} Matching challenge, or `undefined` if not found.
    */
   static getById(id) {
-    return CHALLENGES.find(c => c.id === id);
+    return CHALLENGES.find((challenge) => challenge.id === id);
   }
 
   /**
-   * Accept a challenge
-   * @param {string} challengeId 
+   * Accept a challenge and add it to the user's active list.
+   * If the challenge was previously completed, it is removed from completed
+   * before being re-accepted (re-take allowed).
+   * No-op if the challenge is already in the active list.
+   *
+   * @param {string} challengeId - ID of the challenge to accept.
+   * @returns {Object} Updated user state.
+   * @throws {Error} When `challengeId` does not match any known challenge.
    */
   static acceptChallenge(challengeId) {
-    const state = Tracker.loadState();
     const challenge = this.getById(challengeId);
 
     if (!challenge) {
-      throw new Error(`Challenge with ID ${challengeId} not found.`);
+      throw new Error(`[EcoSync] Challenge not found: "${challengeId}"`);
     }
 
+    const state = Tracker.loadState();
+
+    // Already active — nothing to do
     if (state.acceptedChallenges.includes(challengeId)) {
-      return state; // Already accepted
+      return state;
     }
 
+    // Allow re-taking previously completed challenges
     if (state.completedChallenges.includes(challengeId)) {
-      // Allow re-taking of challenges, or just block it. Let's allow but remove from completed first
-      state.completedChallenges = state.completedChallenges.filter(id => id !== challengeId);
+      state.completedChallenges = state.completedChallenges.filter((id) => id !== challengeId);
     }
 
     state.acceptedChallenges.push(challengeId);
@@ -136,40 +179,45 @@ export class ChallengeManager {
   }
 
   /**
-   * Abandon/Cancel an accepted challenge
-   * @param {string} challengeId 
+   * Abandon (cancel) an active challenge without awarding XP or carbon credits.
+   *
+   * @param {string} challengeId - ID of the challenge to abandon.
+   * @returns {Object} Updated user state.
    */
   static abandonChallenge(challengeId) {
     const state = Tracker.loadState();
-    state.acceptedChallenges = state.acceptedChallenges.filter(id => id !== challengeId);
+    state.acceptedChallenges = state.acceptedChallenges.filter((id) => id !== challengeId);
     Tracker.saveState(state);
     return state;
   }
 
   /**
-   * Complete a challenge
-   * @param {string} challengeId 
+   * Mark an active challenge as complete, award CO2 credits and XP,
+   * and evaluate badge unlocks via the Tracker.
+   *
+   * @param {string} challengeId - ID of the challenge to complete.
+   * @returns {{ state: Object, leveledUp: boolean, co2Saved: number, xpReward: number }}
+   * @throws {Error} When `challengeId` does not match any known challenge.
    */
   static completeChallenge(challengeId) {
-    let state = Tracker.loadState();
     const challenge = this.getById(challengeId);
 
     if (!challenge) {
-      throw new Error(`Challenge with ID ${challengeId} not found.`);
+      throw new Error(`[EcoSync] Challenge not found: "${challengeId}"`);
     }
 
-    // Remove from active
-    state.acceptedChallenges = state.acceptedChallenges.filter(id => id !== challengeId);
+    let state = Tracker.loadState();
 
-    // Add to completed if not already there
+    // Move from active → completed
+    state.acceptedChallenges  = state.acceptedChallenges.filter((id) => id !== challengeId);
     if (!state.completedChallenges.includes(challengeId)) {
       state.completedChallenges.push(challengeId);
     }
 
-    // Add carbon credit and XP
+    // Apply carbon credit
     state.totalCarbonSaved += challenge.co2Saved;
-    
-    // Add XP via Tracker to leverage leveling and badges check
+
+    // Apply XP via Tracker to trigger levelling and badge checks
     const xpResult = Tracker.addXP(state, challenge.xpReward);
     state = xpResult.state;
 
@@ -178,8 +226,8 @@ export class ChallengeManager {
     return {
       state,
       leveledUp: xpResult.leveledUp,
-      co2Saved: challenge.co2Saved,
-      xpReward: challenge.xpReward
+      co2Saved:  challenge.co2Saved,
+      xpReward:  challenge.xpReward
     };
   }
 }
