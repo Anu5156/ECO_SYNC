@@ -1,72 +1,133 @@
-# EcoSync - Carbon Footprint Tracker & Action Hub
+<div align="center">
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/HTML.svg" width="60" alt="HTML5" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/CSS.svg" width="60" alt="CSS3" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/JavaScript.svg" width="60" alt="JavaScript" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Jest.svg" width="60" alt="Jest" />
+</div>
 
-EcoSync is a premium, client-side, interactive Single Page Application (SPA) designed to help individuals understand, track, and reduce their carbon footprint through simple actions, gamified progressions, and personalized insights.
+<h1 align="center">🌱 EcoSync - Carbon Footprint Tracker & Action Hub</h1>
 
-## 🌟 Chosen Vertical
+<p align="center">
+  <strong>A Premium, Accessible, and Gamified Personal Carbon Tracking Companion</strong>
+</p>
 
-**Personal Environmental Sustainability & Gamified Habit Formation**
+<p align="center">
+  <img src="https://img.shields.io/badge/JavaScript-ES6+-yellow" alt="JS" />
+  <img src="https://img.shields.io/badge/CSS-Vanilla-blue" alt="CSS" />
+  <img src="https://img.shields.io/badge/Jest-Tests-red" alt="Jest" />
+  <img src="https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-brightgreen" alt="Accessibility" />
+  <img src="https://img.shields.io/badge/Repository-Under_10MB-blue" alt="Repo Size" />
+</p>
 
-The challenge of climate change is often abstract and hard for individuals to relate to their daily choices. EcoSync bridge this gap by bringing carbon footprint calculation, daily log actions, active challenges, and education under one integrated dashboard. By applying gamification mechanics (XP, levels, and achievement badges), it turns carbon tracking from a chore into a rewarding habit.
-
----
-
-## 🛠️ Technical Approach & Logic
-
-### 1. Emission Calculation Logic
-The calculation engine is based on standard scientific guidelines from the **Intergovernmental Panel on Climate Change (IPCC)** and **Environmental Protection Agency (EPA)**.
-- **Transportation**: Extrapolates weekly vehicle and transit travel to annual distances, factoring in fuel types (gasoline, diesel, hybrid, electric) and transit modes (bus, train). Includes flight emissions (short vs. long-haul flights).
-- **Home Energy**: Computes monthly electricity and heating usage, adjusts based on the heating source fuel type, and divides the total emissions among household members to calculate the individual share.
-- **Diet & Consumption**: Uses benchmarked annual emission factors for dietary profiles (vegan, vegetarian, meat-rich) and consumption behavior (minimalist, average, high) offset by household recycling rate.
-
-### 2. Gamification & Progression Engine
-- **Leveling Curve**: A custom arithmetic progression is implemented where each level $L$ requires $L \times 100\text{ XP}$ to level up. This provides a gradual and engaging progression.
-- **Badges**: Unlocked dynamically based on achievements:
-  - Completing the initial assessment.
-  - Reaching milestone levels (Levels 5 and 10).
-  - Reaching carbon savings milestones (50 kg and 200 kg).
-  - Scoring 100% on the Eco-Quiz.
-  - Completing 5 active challenges.
-
-### 3. Client-Side SPA Architecture
-Built strictly with vanilla CSS, modern HTML5, and ES6 Javascript. Data is persisted securely in local browser storage (`localStorage`), meaning no user data ever leaves their device, satisfying strict privacy compliance.
+> 🚀 A state-of-the-art, client-side gamified tracker designed to help individuals understand their carbon footprint, build green habits through daily action logging, and complete challenges with live XP and level progression.
 
 ---
 
-## 🚀 How the Solution Works
+## ⚡ Overview
 
-1. **Baseline Assessment (Calculator Wizard)**:
-   A clean, accessible multi-step form allows users to enter transportation, heating, electricity, diet, and consumption metrics. It immediately produces an annual emission footprint, compares it to the **2-ton Paris Agreement target**, and labels the user's status (`low`, `medium`, `high`).
-2. **Personalized Goals**:
-   After the assessment, users select a carbon reduction goal (10%, 20%, 30%, or 50% reduction). A circular gauge tracks progress in real-time as activities are logged.
-3. **Daily Action Logger**:
-   Users record positive daily choices (e.g., walking, taking transit, meat-free meals, recycling). These actions offset carbon from their baseline and award XP.
-4. **Gamified Challenges**:
-   Users can browse and accept easy, medium, and hard challenges (e.g., "Veggie Power" for 1 day, or "Pedal & Rail" for 30 days) to earn large XP rewards and achieve massive offsets.
-5. **Eco-Quiz & Library**:
-   Users learn key environmental terms (Scopes 1, 2, 3, etc.) through articles in the Eco-Library and can test their knowledge in the interactive Eco-Quiz module to earn bonus XP.
+**Chosen Vertical:** Individual Sustainability & Gamified Habit Formation
+
+**EcoSync** is an intelligent web application designed to translate abstract climate data into direct, personal action. By combining scientific carbon footprint math with engaging RPG gamification mechanics (XP, levels, and badges), it converts carbon reduction into a rewarding daily journey.
 
 ---
 
-## 📐 Assumptions Made
+## 🎯 Problem
 
-- **Extrapolation**: Weekly transit averages and monthly energy utility values are assumed to represent consistent annual habits (multiplied by 52 and 12, respectively).
-- **Emission Averages**: Carbon calculations utilize average grid emissions and average car consumption models (e.g., a standard passenger car emits roughly $0.192\text{ kg CO}_2\text{e/km}$ gasoline).
-- **Static Baseline**: Setting a new baseline (re-assessment) overrides the old footprint target. The daily log saves are maintained but the active goal limit resets to the new baseline.
-- **Single Device Storage**: Since data is saved strictly in `localStorage`, the state is tied to the current browser/device.
+Individuals face significant challenges in reducing their environmental impact:
+- **Abstract Metrics:** Greenhouse gas metrics (Tons of CO₂e) are difficult to visualize and relate to daily habits.
+- **Lack of Feedback Loops:** Static carbon calculators show a footprint once, but offer no mechanism to track daily improvements in real time.
+- **Low Engagement:** Sustainable habit-building often feels passive, unrewarding, or overly complex.
 
 ---
 
-## 🛠️ Verification, Tests & Compliance
+## 💡 Solution
 
-### Evaluation Parameters Addressed:
-1. **Code Quality**: Structured into clear module files (`js/calculator.js`, `js/tracker.js`, `js/challenges.js`, `js/quiz.js`, `js/app.js`) with complete JSDoc comments.
-2. **Security**: Inputs are heavily sanitized. The calculator and logger reject negative numbers, `NaN`, and `Infinity` to protect against state corruption. Custom SVG rendering uses standard safely populated attributes.
-3. **Efficiency**: Under 10MB total repository size by using a strict `.gitignore` to exclude `node_modules` and testing artifacts. Calculations execute in $\mathcal{O}(1)$ time.
-4. **Testing**: 13 unit tests written using **Jest** covering mathematical precision, leveling curves, challenge transition, quiz bonuses, and security sanitization. Run `npm test` to execute.
-5. **Accessibility**: Aligned with **WCAG 2.1 AA** guidelines:
-   - Full keyboard navigation focus rings (`:focus-visible`).
-   - Accessible skip-links.
-   - Screen-reader tags (`aria-live`, `role="tab"`, `aria-selected`).
-   - Programmatic focus shifting to active sections/modals.
-   - Keyboard Escape key & backdrop click support to close active overlays.
-6. **Problem Alignment**: Directly targets individual awareness, habits, actions, and education in personal sustainability.
+This system generates a **dynamic, personalized green habit cycle** using:
+- **Baseline Assessments:** A scientific carbon footprint wizard aligned with IPCC and EPA metrics.
+- **Daily Action Logger:** Real-time logging of eco-actions (transit, diet, energy shifts) that instantly offset carbon baseline estimates.
+- **Gamified Engagement:** Experience Points (XP) reward cycles, level-ups, and interactive badges.
+- **Educational Hub:** An Eco-Library and interactive Quiz engine supporting active learning.
+
+---
+
+## 🧠 Core Innovation
+
+### 🔹 Gamification Engine Architecture
+
+```text
+User Actions (e.g. Walking, Cycling)
+       ↓
+  Daily Logger (Verifies & sanitizes input)
+       ↓
+  Carbon Math: Amount * Factor = Offset (kg Saved)
+       ↓
+  XP Registered: Amount * Base Reward = XP Awarded
+       ↓
+  Level Progression Check: Lvl L needs L * 100 XP
+       ↓
+  Badge Engine Check (Milestones & Achievement Unlocks)
+```
+
+### 🔹 SVG Donut Segment Math
+Unlike heavy charting libraries that bloat repository size, EcoSync renders high-performance SVG graphics dynamically:
+- Calculates dynamic segment stroke positions using circle circumference: $C = 2\pi r \approx 219.91$ ($r=35$).
+- Assigns offsets dynamically: `strokeDashoffset = -((accumulatedPercent / 100) * circumference)`.
+- Promotes smooth transitions and low memory usage.
+
+---
+
+## 🎯 Alignment with Evaluation Criteria
+
+| Parameter | Implementation Highlights |
+| :--- | :--- |
+| **Code Quality** | Structured modular imports (`calculator.js`, `tracker.js`, `challenges.js`, `quiz.js`, `app.js`), descriptive method names, and clear JSDoc summaries. |
+| **Security** | Safe parsing via custom `safeParseFloat` to intercept `NaN`, `Infinity`, or negative inputs. Restricts data access strictly to localized browser state (`localStorage`), avoiding server-side data leaks. |
+| **Efficiency** | Runs without any heavy third-party framework wrappers. Calculations occur in $\mathcal{O}(1)$ time. Clean `.gitignore` maintains repo size **well under 10MB** by ignoring `node_modules` and test artifacts. |
+| **Testing** | 13 automated **Jest** tests validating mathematical precision, leveling curves, badge checks, and security inputs boundaries. Run `npm test` to verify. |
+| **Accessibility** | Built to **WCAG 2.1 AA** guidelines: Keyboard-visible focus rings, skip-to-content links, screen reader attributes (`role`, `aria-live`, `aria-selected`), Escape/backdrop overlay close listeners, and programmatic focus restoration. |
+| **Problem Alignment** | Directly targets daily habits, environmental awareness, and gamified individual behavior change. |
+
+---
+
+## 🚀 Features
+
+- ✅ **Calculator Wizard**: 5-step, metric/imperial carbon assessment tracking transportation, home utilities, diet, and goods.
+- ✅ **Dynamic Dashboard**: Responsive SVG charts representing category breakdowns and daily activity progress.
+- ✅ **Habits Logger**: Log walked kilometers, public transport usage, or meat-free meals to see carbon offsets in real-time.
+- ✅ **Eco Challenges**: Accept and complete easy, medium, or hard tasks to offset large carbon margins and level up.
+- ✅ **Educational Quiz**: Test your ecological vocabulary with interactive questions and unlock the "Quiz Genius" badge.
+
+---
+
+## 🔒 Security Policy & Safe Practices
+
+### Data Privacy & Storage
+EcoSync operates entirely client-side. 
+- All calculations, logged activities, and achievement profiles are written to the browser's local sandbox storage (`localStorage`).
+- Zero API endpoints are called, eliminating risks of data interception, user profiling, or remote server breaches.
+
+### Input Sanitization
+The application mitigates data injection and code execution:
+- Custom validations discard negative utility entries.
+- Math functions bypass unverified text values to ensure local states remain stable and correct.
+- Direct DOM manipulation is guarded against raw string inputs to prevent Cross-Site Scripting (XSS).
+
+---
+
+## 📄 License & Contributing
+
+### License
+This project is licensed under the **MIT License** - see below for details:
+```text
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
+```
+
+### How to Contribute
+1. Fork the Repository.
+2. Initialize and test local modules:
+   ```bash
+   npm install
+   npm test
+   ```
+3. Create your Feature Branch (`git checkout -b feature/NewFeature`).
+4. Commit your changes and submit a Pull Request.
