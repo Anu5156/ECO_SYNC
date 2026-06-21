@@ -17,9 +17,26 @@
   <img src="https://img.shields.io/badge/Jest-Tests-red" alt="Jest" />
   <img src="https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-brightgreen" alt="Accessibility" />
   <img src="https://img.shields.io/badge/Repository-Under_10MB-blue" alt="Repo Size" />
+  <a href="https://anu5156.github.io/ECO_SYNC/">
+    <img src="https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages-2ea44f?style=for-the-badge" alt="Live Demo" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://anu5156.github.io/ECO_SYNC/" target="_blank">
+    <strong>🚀 View Live Demo → https://anu5156.github.io/ECO_SYNC/</strong>
+  </a>
 </p>
 
 > 🚀 A state-of-the-art, client-side gamified tracker designed to help individuals understand their carbon footprint, build green habits through daily action logging, and complete challenges with live XP and level progression.
+
+---
+
+## 🌐 Live Deployment
+
+> **Deployed URL:** [https://anu5156.github.io/ECO_SYNC/](https://anu5156.github.io/ECO_SYNC/)
+
+The application is hosted on **GitHub Pages** — no backend, no server costs, fully static and privacy-first. Open the link in any modern browser to get started instantly.
 
 ---
 
@@ -131,3 +148,19 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
    ```
 3. Create your Feature Branch (`git checkout -b feature/NewFeature`).
 4. Commit your changes and submit a Pull Request.
+
+---
+
+## 🔗 Links
+
+| Resource | URL |
+| :--- | :--- |
+| 🌐 **Live Demo** | [https://anu5156.github.io/ECO_SYNC/](https://anu5156.github.io/ECO_SYNC/) |
+| 📦 **Repository** | [https://github.com/Anu5156/ECO_SYNC](https://github.com/Anu5156/ECO_SYNC) |
+| 🐛 **Issues** | [https://github.com/Anu5156/ECO_SYNC/issues](https://github.com/Anu5156/ECO_SYNC/issues) |
+
+---
+
+<div align="center">
+  <sub>Built with 💚 for a greener planet | EcoSync © 2025</sub>
+</div>
