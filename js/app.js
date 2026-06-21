@@ -1,6 +1,9 @@
 /**
- * EcoSync SPA Controller
- * Connects UI actions, local storage, calculations, quiz flow, and SVG rendering.
+ * @module app
+ * @description EcoSync SPA Controller.
+ * Orchestrates UI interactions, navigation, SVG chart rendering,
+ * the carbon calculator wizard, daily logger, challenges, quiz, and toast notifications.
+ * All state mutations are delegated to the Tracker, ChallengeManager, and QuizManager modules.
  */
 
 import { CarbonCalculator } from './calculator.js';
@@ -8,77 +11,139 @@ import { Tracker, ECO_ACTIVITIES, BADGES } from './tracker.js';
 import { ChallengeManager } from './challenges.js';
 import { QuizManager } from './quiz.js';
 
-// --- DOM References ---
-const navTabs = document.querySelectorAll('.nav-tab');
-const sections = document.querySelectorAll('.tab-section');
-const themeToggleBtn = document.getElementById('theme-toggle-btn');
-const themeIcon = document.getElementById('theme-icon');
+// ---------------------------------------------------------------------------
+// DOM References — cached once on module load
+// ---------------------------------------------------------------------------
 
-// User Profile Stats (Header)
-const headerUserLevel = document.getElementById('user-level-val');
+const navTabs        = document.querySelectorAll('.nav-tab');
+const sections       = document.querySelectorAll('.tab-section');
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+const themeIcon      = document.getElementById('theme-icon');
+
+// Header
+const headerUserLevel  = document.getElementById('user-level-val');
 const headerUserXpFill = document.getElementById('user-xp-fill-mini-val');
 
-// Dashboard Stat Counters
-const dashFootprint = document.getElementById('dash-footprint-val');
+// Dashboard
+const dashFootprint      = document.getElementById('dash-footprint-val');
 const dashFootprintTrend = document.getElementById('dash-footprint-trend');
-const dashSaved = document.getElementById('dash-saved-val');
-const dashSavedPct = document.getElementById('dash-saved-pct');
-const dashGoal = document.getElementById('dash-goal-val');
-const dashGoalTrend = document.getElementById('dash-goal-trend-lbl');
-const dashXp = document.getElementById('dash-xp-val');
-const dashXpToNext = document.getElementById('dash-xp-to-next');
+const dashSaved          = document.getElementById('dash-saved-val');
+const dashSavedPct       = document.getElementById('dash-saved-pct');
+const dashGoal           = document.getElementById('dash-goal-val');
+const dashGoalTrend      = document.getElementById('dash-goal-trend-lbl');
+const dashXp             = document.getElementById('dash-xp-val');
+const dashXpToNext       = document.getElementById('dash-xp-to-next');
 
 // Charts
-const donutChartSvg = document.getElementById('donut-chart-svg');
+const donutChartSvg    = document.getElementById('donut-chart-svg');
 const donutChartLegend = document.getElementById('donut-chart-legend');
-const donutTotalValue = document.getElementById('chart-total-value');
-const weeklyBarChart = document.getElementById('weekly-bar-chart');
+const donutTotalValue  = document.getElementById('chart-total-value');
+const weeklyBarChart   = document.getElementById('weekly-bar-chart');
 
 // Calculator Wizard
-const wizardSteps = document.querySelectorAll('.wizard-step-card');
-const wizardNodes = document.querySelectorAll('.wizard-step-node');
+const wizardSteps       = document.querySelectorAll('.wizard-step-card');
+const wizardNodes       = document.querySelectorAll('.wizard-step-node');
 const wizardProgressBar = document.getElementById('wizard-progress-bar-fill');
-const calcUnitsSelect = document.getElementById('calc-units');
-const carDistLabel = document.getElementById('car-dist-label');
-const publicDistLabel = document.getElementById('public-dist-label');
-const footprintForm = document.getElementById('footprint-form');
-const btnRecalculate = document.getElementById('btn-recalculate');
-const btnGoDashboard = document.getElementById('btn-go-dashboard');
+const calcUnitsSelect   = document.getElementById('calc-units');
+const carDistLabel      = document.getElementById('car-dist-label');
+const publicDistLabel   = document.getElementById('public-dist-label');
+const footprintForm     = document.getElementById('footprint-form');
+const btnRecalculate    = document.getElementById('btn-recalculate');
+const btnGoDashboard    = document.getElementById('btn-go-dashboard');
 
 // Daily Logger
-const activitiesButtonGrid = document.getElementById('activities-button-grid');
+const activitiesButtonGrid      = document.getElementById('activities-button-grid');
 const activitiesHistoryContainer = document.getElementById('activities-history-container');
-const btnClearLogs = document.getElementById('btn-clear-logs');
+const btnClearLogs              = document.getElementById('btn-clear-logs');
 
-// Daily Logger Modal
-const activityLogModal = document.getElementById('activity-log-modal');
-const activityLogForm = document.getElementById('activity-log-form');
-const modalTitle = document.getElementById('modal-title');
-const modalDesc = document.getElementById('modal-desc');
-const modalActivityId = document.getElementById('modal-activity-id');
-const modalInputLabel = document.getElementById('modal-input-label');
-const modalInputAmount = document.getElementById('modal-input-amount');
-const btnCloseModal = document.getElementById('btn-close-modal');
+// Logger Modal
+const activityLogModal  = document.getElementById('activity-log-modal');
+const activityLogForm   = document.getElementById('activity-log-form');
+const modalTitle        = document.getElementById('modal-title');
+const modalDesc         = document.getElementById('modal-desc');
+const modalActivityId   = document.getElementById('modal-activity-id');
+const modalInputLabel   = document.getElementById('modal-input-label');
+const modalInputAmount  = document.getElementById('modal-input-amount');
+const btnCloseModal     = document.getElementById('btn-close-modal');
 
 // Action Hub
-const circleProgressFill = document.getElementById('circle-progress-fill');
-const goalCirclePercent = document.getElementById('goal-circle-percent');
-const goalStatusText = document.getElementById('goal-status-text');
+const circleProgressFill  = document.getElementById('circle-progress-fill');
+const goalCirclePercent   = document.getElementById('goal-circle-percent');
+const goalStatusText      = document.getElementById('goal-status-text');
 const challengesContainer = document.getElementById('challenges-container');
 const badgesGridContainer = document.getElementById('badges-grid-container');
 
-// Eco-Quiz Box
+// Quiz
 const quizContainerBox = document.getElementById('quiz-container-box');
 
 // Toast
 const levelUpToast = document.getElementById('level-up-toast-notification');
 const toastLevelVal = document.getElementById('toast-level-val');
 
-// --- Global SPA State ---
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** SVG circle circumference for r=35: 2 × π × 35 ≈ 219.91 */
+const SVG_CIRCUMFERENCE = 219.91;
+
+/** SVG stroke-dasharray total for the goal progress ring (r=40). */
+const GOAL_RING_CIRCUMFERENCE = 251.2;
+
+/** Minimum bar height percentage for the weekly chart (ensures visual bars). */
+const BAR_MIN_HEIGHT_PCT = 5;
+
+/** Maximum bar fill percentage of chart height. */
+const BAR_MAX_HEIGHT_PCT = 90;
+
+/** Days to display in the weekly bar chart. */
+const WEEKLY_CHART_DAYS = 7;
+
+/** XP bonus awarded on completing the carbon calculator for the first time. */
+const FIRST_CALC_XP_BONUS = 100;
+
+/** Focus-shift delay in ms (allows DOM to render before focusing). */
+const FOCUS_DELAY_MS = 50;
+
+/** Toast display duration in milliseconds. */
+const TOAST_DURATION_MS = 4500;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Escape a string for safe insertion into HTML to prevent XSS.
+ *
+ * @param {string} str - Raw string to sanitize.
+ * @returns {string} HTML-escaped string.
+ */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+// ---------------------------------------------------------------------------
+// SPA State
+// ---------------------------------------------------------------------------
+
+/** Current active step in the calculator wizard (1-indexed). */
 let currentWizardStep = 1;
+
+/** Index of the quiz question currently displayed. */
 let currentQuizQuestionIndex = 0;
+
+/** Active quiz question set for the current session. */
 let currentQuizQuestions = [];
+
+/** Count of correct answers in the current quiz session. */
 let currentQuizScore = 0;
+
+/** Selected answer index for the current question, or null if not yet answered. */
 let selectedQuizAnswer = null;
 
 // --- Initialize App ---
@@ -148,7 +213,7 @@ function renderApp() {
   const state = Tracker.loadState();
   
   // 1. Header & Level badges
-  headerUserLevel.innerText = state.level;
+  headerUserLevel.textContent = state.level;
   const xpNeeded = state.level * 100;
   const xpPct = (state.xp / xpNeeded) * 100;
   headerUserXpFill.style.width = `${xpPct}%`;
@@ -176,21 +241,21 @@ function renderApp() {
   }
 
   // Savings
-  dashSaved.innerText = `${state.totalCarbonSaved.toFixed(1)} kg`;
+  dashSaved.textContent = `${state.totalCarbonSaved.toFixed(1)} kg`;
   
   // Goal progress info
   const goalProgress = Tracker.getGoalProgress();
   if (goalProgress) {
-    dashGoal.innerText = `${goalProgress.progressPercent}%`;
-    dashGoalTrend.innerHTML = `<span>Saved ${goalProgress.currentSavedKg.toFixed(0)} of ${goalProgress.targetReductionKg.toFixed(0)} kg</span>`;
+    dashGoal.textContent = `${goalProgress.progressPercent}%`;
+    dashGoalTrend.innerHTML = `<span>Saved ${escapeHtml(goalProgress.currentSavedKg.toFixed(0))} of ${escapeHtml(goalProgress.targetReductionKg.toFixed(0))} kg</span>`;
   } else {
-    dashGoal.innerText = '0%';
+    dashGoal.textContent = '0%';
     dashGoalTrend.innerHTML = '<span>No goal active</span>';
   }
 
   // XP
-  dashXp.innerText = `${state.xp} XP`;
-  dashXpToNext.innerText = `${xpNeeded - state.xp} XP to Lvl ${state.level + 1}`;
+  dashXp.textContent = `${state.xp} XP`;
+  dashXpToNext.textContent = `${xpNeeded - state.xp} XP to Lvl ${state.level + 1}`;
 
   // 3. Render Dashboard Charts
   renderDonutChart(state);
@@ -225,16 +290,15 @@ function renderDonutChart(state) {
   }
 
   const result = state.footprintResult;
-  donutTotalValue.innerText = result.totalTons.toFixed(1);
+  donutTotalValue.textContent = result.totalTons.toFixed(1);
 
   const categories = [
-    { name: 'Transport', key: 'transport', color: '#10b981' },
-    { name: 'Home Energy', key: 'energy', color: '#06b6d4' },
-    { name: 'Food/Diet', key: 'food', color: '#a855f7' },
-    { name: 'Goods/Waste', key: 'consumption', color: '#f59e0b' }
+    { name: 'Transport',   key: 'transport',   color: '#10b981' },
+    { name: 'Home Energy', key: 'energy',       color: '#06b6d4' },
+    { name: 'Food/Diet',   key: 'food',         color: '#a855f7' },
+    { name: 'Goods/Waste', key: 'consumption',  color: '#f59e0b' }
   ];
 
-  const circumference = 219.91; // 2 * PI * r (35)
   let accumulatedPercent = 0;
   let legendHtml = '';
 
@@ -252,10 +316,10 @@ function renderDonutChart(state) {
       circle.setAttribute('class', 'chart-ring-segment');
       circle.setAttribute('stroke', cat.color);
       
-      const strokeDash = (share / 100) * circumference;
-      const strokeOffset = -((accumulatedPercent / 100) * circumference);
+      const strokeDash   = (share / 100) * SVG_CIRCUMFERENCE;
+      const strokeOffset  = -((accumulatedPercent / 100) * SVG_CIRCUMFERENCE);
       
-      circle.setAttribute('stroke-dasharray', `${strokeDash} ${circumference}`);
+      circle.setAttribute('stroke-dasharray', `${strokeDash} ${SVG_CIRCUMFERENCE}`);
       circle.setAttribute('stroke-dashoffset', strokeOffset.toString());
       
       donutChartSvg.appendChild(circle);
@@ -264,8 +328,8 @@ function renderDonutChart(state) {
 
     legendHtml += `
       <div class="legend-item">
-        <span class="legend-color" style="background:${cat.color}"></span>
-        <span>${cat.name}: <strong>${percentageVal}%</strong> (${(value/1000).toFixed(2)} t)</span>
+        <span class="legend-color" style="background:${escapeHtml(cat.color)}"></span>
+        <span>${escapeHtml(cat.name)}: <strong>${escapeHtml(String(percentageVal))}%</strong> (${escapeHtml((value / 1000).toFixed(2))} t)</span>
       </div>
     `;
   });
@@ -306,33 +370,31 @@ function renderWeeklyChart(state) {
     }
   });
 
-  const maxSaving = Math.max(...Object.values(savingsByDate), 1); // Avoid division by zero
+  const maxSaving = Math.max(...Object.values(savingsByDate), 1); // Prevent division by zero
 
   last7Days.forEach(date => {
-    const val = savingsByDate[date];
-    const percentageHeight = Math.max(5, (val / maxSaving) * 90); // Min height 5% for visual impact
-    
-    // Parse nice date label (e.g. "Jun 19")
-    const dateObj = new Date(date);
-    const label = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+    const val          = savingsByDate[date];
+    const heightPct    = Math.max(BAR_MIN_HEIGHT_PCT, (val / maxSaving) * BAR_MAX_HEIGHT_PCT);
+    const dateObj      = new Date(date);
+    const label        = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
 
     const barWrapper = document.createElement('div');
     barWrapper.className = 'bar-wrapper';
 
     const barFill = document.createElement('div');
     barFill.className = 'bar-fill';
-    barFill.style.height = `${percentageHeight}%`;
+    barFill.style.height = `${heightPct}%`;
     barFill.setAttribute('tabindex', '0');
     barFill.setAttribute('aria-label', `Saved ${val.toFixed(1)} kg of CO2 on ${label}`);
 
     const tooltip = document.createElement('span');
     tooltip.className = 'bar-tooltip';
-    tooltip.innerText = `${val.toFixed(1)} kg CO₂`;
+    tooltip.textContent = `${val.toFixed(1)} kg CO₂`;
     barFill.appendChild(tooltip);
 
     const barLabel = document.createElement('span');
     barLabel.className = 'bar-label';
-    barLabel.innerText = label;
+    barLabel.textContent = label;
 
     barWrapper.appendChild(barFill);
     barWrapper.appendChild(barLabel);
@@ -417,9 +479,9 @@ function setupWizard() {
     state.calculatorInputs = inputs;
     state.footprintResult = footprint;
     
-    // Award 100 XP for first calculation
+    // Award XP bonus for first calculation
     if (!state.badges.includes('first_step')) {
-      const xpRes = Tracker.addXP(state, 100);
+      const xpRes = Tracker.addXP(state, FIRST_CALC_XP_BONUS);
       Tracker.saveState(xpRes.state);
       if (xpRes.leveledUp) {
         showLevelUpToast(xpRes.state.level);
@@ -435,7 +497,7 @@ function setupWizard() {
 
     // Display step 6 results
     const resultsCo2 = document.getElementById('results-co2-val');
-    resultsCo2.innerText = `${footprint.totalTons.toFixed(2)} Tons CO₂e`;
+    resultsCo2.textContent = `${footprint.totalTons.toFixed(2)} Tons CO₂e`;
 
     const resultsComparison = document.getElementById('results-comparison-box');
     let comparisonHtml = '';
@@ -489,10 +551,8 @@ function goToWizardStep(step) {
     if (parseInt(card.getAttribute('data-step')) === step) {
       card.classList.add('active');
       card.setAttribute('tabindex', '-1');
-      // Set focus to the active wizard step card to announce changes to assistive technologies
-      setTimeout(() => {
-        card.focus();
-      }, 50);
+      // Deferred focus lets the DOM update before assistive technologies are notified
+      setTimeout(() => card.focus(), FOCUS_DELAY_MS);
     }
   });
 
@@ -938,11 +998,14 @@ function renderQuizModule() {
   }
 }
 
-// --- Toast Level Up Alert ---
+/**
+ * Show the level-up toast notification for a given level.
+ *
+ * @param {number} levelNum - The new level the user has reached.
+ * @returns {void}
+ */
 function showLevelUpToast(levelNum) {
-  toastLevelVal.innerText = levelNum;
+  toastLevelVal.textContent = levelNum;
   levelUpToast.classList.add('show');
-  setTimeout(() => {
-    levelUpToast.classList.remove('show');
-  }, 4500);
+  setTimeout(() => levelUpToast.classList.remove('show'), TOAST_DURATION_MS);
 }
